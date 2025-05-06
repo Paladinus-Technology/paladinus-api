@@ -4,6 +4,7 @@ import { RateLimitMiddleware } from './common/middleware/rate-limit.middleware';
 import { ActivityReportModule } from './modules/activity-report/activity-report.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UsersModule } from './modules/users/users.module';
     UsersModule,
     CustomerModule,
     ActivityReportModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
