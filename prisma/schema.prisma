@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  MASTER
+  CLIENT
+  PROSPECT
+}
+
+enum TicketStatus {
+  ABERTO
+  EM_EXECUCAO
+  ESPERANDO_APROVACAO
+  ESPERANDO_MATERIAL
+  CONCLUIDO
+}
+
+model Company {
+  id        Int       @id @default(autoincrement())
+  name      String
+  cnpj      String    @unique
+  location  String
+  emails    ContactEmail[] 
+  users     User[]
+  tickets   Ticket[]
+  createdAt DateTime  @default(now())
+}
+
+model ContactEmail {
+  id        Int      @id @default(autoincrement())
+  email     String
+  company   Company  @relation(fields: [companyId], references: [id])
+  companyId Int
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  password   String
+  role       UserRole
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  Int
+  createdAt  DateTime @default(now())
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String
+  status      TicketStatus @default(ABERTO)
+  company     Company      @relation(fields: [companyId], references: [id])
+  companyId   Int
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
