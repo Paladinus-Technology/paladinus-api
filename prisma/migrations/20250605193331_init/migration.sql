@@ -6,32 +6,25 @@ CREATE TYPE "TicketStatus" AS ENUM ('ABERTO', 'EM_EXECUCAO', 'ESPERANDO_APROVACA
 
 -- CreateTable
 CREATE TABLE "Company" (
-    "id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "cnpj" TEXT NOT NULL,
     "location" TEXT NOT NULL,
+    "emails" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Company_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "ContactEmail" (
-    "id" SERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "companyId" INTEGER NOT NULL,
-
-    CONSTRAINT "ContactEmail_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" UUID NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
     "role" "UserRole" NOT NULL,
-    "companyId" INTEGER NOT NULL,
+    "companyId" UUID NOT NULL,
+    "refreshToken" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -43,7 +36,7 @@ CREATE TABLE "Ticket" (
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "status" "TicketStatus" NOT NULL DEFAULT 'ABERTO',
-    "companyId" INTEGER NOT NULL,
+    "companyId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -51,13 +44,16 @@ CREATE TABLE "Ticket" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Company_id_key" ON "Company"("id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Company_cnpj_key" ON "Company"("cnpj");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_id_key" ON "User"("id");
 
--- AddForeignKey
-ALTER TABLE "ContactEmail" ADD CONSTRAINT "ContactEmail_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
