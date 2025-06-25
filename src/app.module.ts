@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { EmailModule } from './common/email/email.module';
+import { JwtTokenModule } from './common/jwt-token/jwt-token.module';
 import { CompanyModule } from './modules/company/company.module';
 import { TicketModule } from './modules/ticket/ticket.module';
 import { UserModule } from './modules/user/user.module';
@@ -13,21 +14,13 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    JwtModule.registerAsync({
-      global: true,
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: '15m',
-        },
-      }),
-      inject: [ConfigService],
-    }),
+    JwtTokenModule,
     CompanyModule,
     UserModule,
     TicketModule,
     AuthModule,
     PrismaModule,
+    EmailModule,
   ],
   controllers: [],
   providers: [],

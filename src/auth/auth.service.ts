@@ -1,16 +1,23 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Prisma, UserRole } from 'generated/prisma';
+import { EmailService } from 'src/common/email/email.service';
+import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
+import { comparePassword, hashPassword } from 'src/common/utils/hash';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { MasterCreateDto } from './dto/master-register.dto';
+import { JwtPayload } from './jwt/jwt.payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
-    private jwt: JwtService,
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtTokenService,
+    private readonly email: EmailService,
   ) {}
 
   private getUserByEmail(email: string) {
@@ -25,12 +32,18 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException('Email or password incorrect!');
     }
-    const isMatch = await bcrypt.compare(loginAuthDto.password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Email or password incorrect!');
+    const isMatch = await comparePassword(loginAuthDto.password, user.password);
+    if (!isMatch)
+      throw new UnauthorizedException('Email or password incorrect!');
 
-    const payload = { id: user.id, name: user.name, email: user.email, role: user.role };
-    const access_token = this.jwt.sign(payload, { expiresIn: '15m' });
-    const refresh_token = this.jwt.sign({ id: user.id, role: user.role }, { expiresIn: '7d' });
+    const payload: JwtPayload = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    };
+
+    const { access_token, refresh_token } = this.jwt.sing(payload);
 
     return { access_token, refresh_token };
   }
@@ -41,14 +54,14 @@ export class AuthService {
       throw new BadRequestException('A User with this email already exists');
     }
 
-    const hashPassword = await bcrypt.hash(masterCreatedDto.password, 10);
+    const hashedPassword = await hashPassword(masterCreatedDto.password);
 
     try {
       const userCreate = await this.prisma.user.create({
         data: {
           name: masterCreatedDto.name,
           email: masterCreatedDto.email,
-          password: hashPassword,
+          password: hashedPassword,
           role: UserRole.MASTER,
           company: {
             create: {
@@ -60,6 +73,8 @@ export class AuthService {
           },
         },
       });
+
+      this.email.sendWelcomeEmail(userCreate.email, userCreate.name);
 
       return `${userCreate.name} Criado com sucesso !!`;
     } catch (err) {

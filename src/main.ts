@@ -20,12 +20,16 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
+  app.enableCors({ origin: ' http://localhost:4200' });
   const config = new DocumentBuilder()
     .setTitle('Paladinus API')
     .setDescription('API documentation for the Paladinus platform.')
     .setVersion('0.1')
-    .setContact('Paladinus Dev Team', 'https://paladinusse.com', 'paladinusse@gmail.com')
+    .setContact(
+      'Paladinus Dev Team',
+      'https://paladinusse.com',
+      'paladinusse@gmail.com',
+    )
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
