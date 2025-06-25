@@ -1,16 +1,17 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { UserRole } from 'generated/prisma';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { CreateUserDto } from './dto/create-user.dto';
+import { InviteClientDto } from './dto/invite-client.dto';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Roles(UserRole.MASTER)
+  @Post('invite/client')
+  invite(@Body() inviteClient: InviteClientDto) {
+    return this.userService.invite(inviteClient);
   }
 
   @Roles(UserRole.MASTER)
@@ -18,19 +19,4 @@ export class UserController {
   findAll() {
     return this.userService.findAll();
   }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.userService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.userService.update(+id, updateUserDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.userService.remove(+id);
-  // }
 }
