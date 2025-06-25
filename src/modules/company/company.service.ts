@@ -1,15 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompanyService {
-  create(createCompanyDto: CreateCompanyDto) {
-    return 'This action adds a new company';
+  constructor(private prisma: PrismaService) {}
+
+  async create(createCompanyDto: CreateCompanyDto) {
+    try {
+      await this.prisma.company.create({
+        data: {
+          name: createCompanyDto.name,
+          cnpj: createCompanyDto.cnpj,
+          location: createCompanyDto.location,
+        },
+      });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+    return `This action adds a new ${createCompanyDto.name}`;
   }
 
-  findAll() {
-    return `This action returns all company`;
+  async findAll() {
+    const data = await this.prisma.company.findMany();
+    return { data };
   }
 
   findOne(id: number) {
