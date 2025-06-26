@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UserRole } from 'generated/prisma';
+import { EmailService } from 'src/common/email/email.service';
+import { EmailPayload } from 'src/common/interfaces/EmailPayload';
+import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { InviteClientDto } from './dto/invite-client.dto';
 
 @Injectable()
 export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly jwt: JwtTokenService,
+    private readonly email: EmailService,
+  ) {}
+
+  async invite(inviteClient: InviteClientDto, origin: string) {
+    const userInvite: EmailPayload = {
+      email: inviteClient.email,
+      role: UserRole.CLIENT,
+      companyId: inviteClient.companyId,
+    };
+    const { token } = this.jwt.TokenFromEmail(userInvite);
+
+    this.email.inviteEmail(inviteClient.email, token, origin);
   }
 
   findAll() {
-    return `This action returns all user`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
-
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    return this.prisma.user.findMany();
   }
 }

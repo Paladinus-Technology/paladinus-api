@@ -1,8 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { UserRole } from 'generated/prisma';
+import { Roles } from 'src/common/decorators/roles.decorator';
 import { CompanyService } from './company.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
 
+@Roles(UserRole.MASTER)
 @Controller('company')
 export class CompanyController {
   constructor(private readonly companyService: CompanyService) {}

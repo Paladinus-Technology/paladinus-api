@@ -1,34 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Request } from 'express';
+import { UserRole } from 'generated/prisma';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { InviteClientDto } from './dto/invite-client.dto';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @Roles(UserRole.MASTER)
+  @Post('invite/client')
+  invite(@Req() req: Request, @Body() inviteClient: InviteClientDto) {
+    const origin = (req.headers.origin as string) ?? (req.headers.referer as string);
+
+    return this.userService.invite(inviteClient, origin);
   }
 
+  @Roles(UserRole.MASTER)
   @Get()
   findAll() {
     return this.userService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

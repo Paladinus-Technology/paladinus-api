@@ -1,15 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { JwtPayload } from 'src/auth/jwt/jwt.payload.interface';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Injectable()
 export class TicketService {
-  create(createTicketDto: CreateTicketDto) {
-    return 'This action adds a new ticket';
+  constructor(private prisma: PrismaService) {}
+  async create(createTicketDto: CreateTicketDto, user: JwtPayload) {
+    const dataUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+    });
+    const dataCompany = await this.prisma.company.findUnique({
+      where: { id: dataUser?.companyId },
+    });
+    return { dataCompany };
   }
 
-  findAll() {
-    return `This action returns all ticket`;
+  async findAll() {
+    const data = await this.prisma.ticket.findMany();
+    return { data };
   }
 
   findOne(id: number) {

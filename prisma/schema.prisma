@@ -29,31 +29,25 @@ enum TicketStatus {
 }
 
 model Company {
-  id        Int       @id @default(autoincrement())
+  id        String    @id @default(uuid()) @db.Uuid @unique
   name      String
   cnpj      String    @unique
   location  String
-  emails    ContactEmail[] 
+  emails    String[] 
   users     User[]
   tickets   Ticket[]
   createdAt DateTime  @default(now())
 }
 
-model ContactEmail {
-  id        Int      @id @default(autoincrement())
-  email     String
-  company   Company  @relation(fields: [companyId], references: [id])
-  companyId Int
-}
-
 model User {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid()) @db.Uuid @unique
   name       String
   email      String   @unique
   password   String
   role       UserRole
   company    Company  @relation(fields: [companyId], references: [id])
-  companyId  Int
+  companyId  String   @db.Uuid
+  refreshToken String?
   createdAt  DateTime @default(now())
 }
 
@@ -63,7 +57,7 @@ model Ticket {
   description String
   status      TicketStatus @default(ABERTO)
   company     Company      @relation(fields: [companyId], references: [id])
-  companyId   Int
+  companyId   String       @db.Uuid
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
