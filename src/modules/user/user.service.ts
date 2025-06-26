@@ -14,7 +14,7 @@ export class UserService {
     private readonly email: EmailService,
   ) {}
 
-  async invite(inviteClient: InviteClientDto) {
+  async invite(inviteClient: InviteClientDto, origin: string) {
     const userInvite: EmailPayload = {
       email: inviteClient.email,
       role: UserRole.CLIENT,
@@ -22,7 +22,7 @@ export class UserService {
     };
     const { token } = this.jwt.TokenFromEmail(userInvite);
 
-    this.email.inviteEmail(inviteClient.email, token);
+    this.email.inviteEmail(inviteClient.email, token, origin);
   }
 
   findAll() {

@@ -1,13 +1,17 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Prisma, UserRole } from 'generated/prisma';
 import { EmailService } from 'src/common/email/email.service';
+import { EmailPayload } from 'src/common/interfaces/EmailPayload';
 import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
 import { comparePassword, hashPassword } from 'src/common/utils/hash';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ClientCreateDto } from './dto/client-tegister.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { MasterCreateDto } from './dto/master-register.dto';
 import { JwtPayload } from './jwt/jwt.payload.interface';
@@ -23,6 +27,12 @@ export class AuthService {
   private getUserByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
+    });
+  }
+  private getCompanyById(id: string) {
+    return this.prisma.company.findUnique({
+      where: { id },
+      include: { users: true },
     });
   }
 
@@ -89,19 +99,43 @@ export class AuthService {
     }
   }
 
-  // findAll() {
-  //   return `This action returns all auth`;
-  // }
+  async createClient(emailToken: EmailPayload, clientDTO: ClientCreateDto) {
+    const user = await this.getUserByEmail(emailToken.email);
+    if (user)
+      throw new BadRequestException('A User with this email already exists');
 
-  // findOne(id: number) {
-  //   return `This action returns a #${id} auth`;
-  // }
+    console.log(emailToken);
+    const company = await this.getCompanyById(emailToken.companyId);
+    if (!company) throw new BadRequestException('A Company is required!');
 
-  // update(id: number, updateAuthDto: UpdateAuthDto) {
-  //   return `This action updates a #${id} auth`;
-  // }
+    const hashedPassword = await hashPassword(clientDTO.password);
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} auth`;
-  // }
+    try {
+      const clientCreate = await this.prisma.user.create({
+        data: {
+          name: clientDTO.name,
+          email: emailToken.email,
+          password: hashedPassword,
+          role: emailToken.role as UserRole,
+          companyId: emailToken.companyId,
+        },
+      });
+
+      await this.prisma.company.update({
+        where: { id: emailToken.companyId },
+        data: {
+          emails: {
+            push: emailToken.email,
+          },
+        },
+      });
+
+      return `${clientCreate.name} Criado com sucesso !!`;
+    } catch (err) {
+      Logger.error('Erro ao criar cliente:', err);
+      throw new InternalServerErrorException(
+        'Não foi possível criar o cliente.',
+      );
+    }
+  }
 }

@@ -1,5 +1,5 @@
-export function invitedEmail(token: string): string {
-  const link = `https://suaapp.com/complete-signup?token=${token}`;
+export function invitedEmail(token: string, origin: string): string {
+  const link = `${origin}/auth/signup?token=${token}`;
 
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; background: #f9f9f9; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">

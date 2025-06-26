@@ -20,12 +20,12 @@ export class EmailService {
     }
   }
 
-  async inviteEmail(to: string, token: string) {
+  async inviteEmail(to: string, token: string, origin: string) {
     try {
       return this.mailerService.sendMail({
         to,
         subject: 'Acesso à plataforma corporativa da Paladinus SE',
-        html: invitedEmail(token),
+        html: invitedEmail(token, origin),
       });
     } catch (error) {
       Logger.log(error);

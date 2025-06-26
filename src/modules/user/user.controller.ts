@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Request } from 'express';
 import { UserRole } from 'generated/prisma';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { InviteClientDto } from './dto/invite-client.dto';
@@ -10,8 +11,10 @@ export class UserController {
 
   @Roles(UserRole.MASTER)
   @Post('invite/client')
-  invite(@Body() inviteClient: InviteClientDto) {
-    return this.userService.invite(inviteClient);
+  invite(@Req() req: Request, @Body() inviteClient: InviteClientDto) {
+    const origin = (req.headers.origin as string) ?? (req.headers.referer as string);
+
+    return this.userService.invite(inviteClient, origin);
   }
 
   @Roles(UserRole.MASTER)
