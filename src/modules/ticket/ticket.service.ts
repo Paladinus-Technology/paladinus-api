@@ -7,10 +7,14 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 @Injectable()
 export class TicketService {
   constructor(private prisma: PrismaService) {}
-  async create(createTicketDto: CreateTicketDto, user: JwtPayload) {
-    const dataUser = await this.prisma.user.findUnique({
-      where: { id: user.id },
+  private findUserById(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
     });
+  }
+
+  async create(createTicketDto: CreateTicketDto, user: JwtPayload) {
+    const dataUser = await this.findUserById(user.id);
     const dataCompany = await this.prisma.company.findUnique({
       where: { id: dataUser?.companyId },
     });
@@ -18,7 +22,56 @@ export class TicketService {
   }
 
   async findAll() {
-    const data = await this.prisma.ticket.findMany();
+    const dataBank = await this.prisma.ticket.findMany({
+      select: {
+        title: true,
+        status: true,
+        company: {
+          select: {
+            name: true,
+          },
+        },
+        createdBy: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const data = dataBank.map((ticket) => ({
+      title: ticket.title,
+      status: ticket.status,
+      company: ticket.company.name,
+      createdBy: ticket.createdBy.name,
+    }));
+    return { data };
+  }
+
+  async findAllToClient(id: string) {
+    const dataUser = await this.findUserById(id);
+    const dataBank = await this.prisma.ticket.findMany({
+      where: { companyId: dataUser?.companyId },
+      select: {
+        title: true,
+        status: true,
+        company: {
+          select: {
+            name: true,
+          },
+        },
+        createdBy: {
+          select: { name: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const data = dataBank.map((ticket) => ({
+      title: ticket.title,
+      status: ticket.status,
+      company: ticket.company.name,
+      createdBy: ticket.createdBy.name,
+    }));
     return { data };
   }
 

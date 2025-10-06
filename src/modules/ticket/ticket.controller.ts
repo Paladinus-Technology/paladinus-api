@@ -19,9 +19,11 @@ export class TicketController {
     return this.ticketService.create(createTicketDto, user);
   }
 
-  @Roles(UserRole.MASTER)
   @Get()
-  findAll() {
+  findAll(@getUserToken() user: JwtPayload) {
+    if (user.role === UserRole.CLIENT)
+      return this.ticketService.findAllToClient(user.id);
+
     return this.ticketService.findAll();
   }
 }

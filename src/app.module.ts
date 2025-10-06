@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
+import { AuthGuard } from './auth/guard/auth.guard';
 import { EmailModule } from './common/email/email.module';
+import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { JwtTokenModule } from './common/jwt-token/jwt-token.module';
 import { CompanyModule } from './modules/company/company.module';
 import { TicketModule } from './modules/ticket/ticket.module';
@@ -23,6 +26,15 @@ import { PrismaModule } from './prisma/prisma.module';
     EmailModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {}

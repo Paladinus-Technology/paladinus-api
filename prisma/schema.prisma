@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -12,6 +6,44 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model Company {
+  id        String   @id @unique @default(uuid()) @db.Uuid
+  name      String
+  cnpj      String   @unique
+  location  String
+  emails    String[]
+  createdAt DateTime @default(now())
+  tickets   Ticket[]
+  users     User[]
+}
+
+model User {
+  id           String   @id @unique @default(uuid()) @db.Uuid
+  name         String
+  email        String   @unique
+  password     String
+  role         UserRole
+  companyId    String   @db.Uuid
+  refreshToken String?
+  createdAt    DateTime @default(now())
+  Ticket       Ticket[]
+  company      Company  @relation(fields: [companyId], references: [id])
+}
+
+model Ticket {
+  id          Int          @id @default(autoincrement())
+  title       String
+  description String
+  status      TicketStatus @default(ABERTO)
+  companyId   String       @db.Uuid
+  createdById String       @db.Uuid
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  solution    String?
+  company     Company      @relation(fields: [companyId], references: [id])
+  createdBy   User         @relation(fields: [createdById], references: [id])
 }
 
 enum UserRole {
@@ -26,38 +58,4 @@ enum TicketStatus {
   ESPERANDO_APROVACAO
   ESPERANDO_MATERIAL
   CONCLUIDO
-}
-
-model Company {
-  id        String    @id @default(uuid()) @db.Uuid @unique
-  name      String
-  cnpj      String    @unique
-  location  String
-  emails    String[] 
-  users     User[]
-  tickets   Ticket[]
-  createdAt DateTime  @default(now())
-}
-
-model User {
-  id         String   @id @default(uuid()) @db.Uuid @unique
-  name       String
-  email      String   @unique
-  password   String
-  role       UserRole
-  company    Company  @relation(fields: [companyId], references: [id])
-  companyId  String   @db.Uuid
-  refreshToken String?
-  createdAt  DateTime @default(now())
-}
-
-model Ticket {
-  id          Int          @id @default(autoincrement())
-  title       String
-  description String
-  status      TicketStatus @default(ABERTO)
-  company     Company      @relation(fields: [companyId], references: [id])
-  companyId   String       @db.Uuid
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
 }
