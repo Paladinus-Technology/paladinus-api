@@ -132,11 +132,11 @@ export class AuthService {
       return `${userCreate.name} Criado com sucesso !!`;
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        console.error('[Erro conhecido do Prisma]', err.message);
+        console.error('[Erro conhecido do Prisma]', (err as any).message);
       } else if (err instanceof Prisma.PrismaClientUnknownRequestError) {
-        console.error('[Erro desconhecido do Prisma]', err);
+        console.error('[Erro desconhecido do Prisma]', (err as any).message);
       } else {
-        console.error('[Erro geral]', err);
+        console.error('[Erro geral]', (err as any).message);
       }
       throw new BadRequestException('Erro ao criar usuário/master');
     }
