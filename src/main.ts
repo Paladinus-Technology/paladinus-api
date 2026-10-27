@@ -18,7 +18,11 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  app.enableCors({ origin: ' http://localhost:4200' });
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   const config = new DocumentBuilder()
     .setTitle('Paladinus API')
