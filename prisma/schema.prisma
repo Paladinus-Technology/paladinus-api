@@ -4,28 +4,34 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
+     provider = "sqlite"
+     url      = env("DATABASE_URL")
+   }
 
 model Company {
-  id        String   @id @unique @default(uuid()) @db.Uuid
+  id        String   @id @unique @default(uuid())
   name      String
   cnpj      String   @unique
   location  String
-  emails    String[]
+  emails    CompanyEmail[]
   createdAt DateTime @default(now())
   tickets   Ticket[]
   users     User[]
 }
+model CompanyEmail {
+  id        String  @id @default(uuid())
+  email     String
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
 
 model User {
-  id           String   @id @unique @default(uuid()) @db.Uuid
+  id           String   @id @unique @default(uuid()) 
   name         String
   email        String   @unique
   password     String
   role         UserRole
-  companyId    String   @db.Uuid
+  companyId    String   
   refreshToken String?
   createdAt    DateTime @default(now())
   Ticket       Ticket[]
@@ -37,8 +43,8 @@ model Ticket {
   title       String
   description String
   status      TicketStatus @default(ABERTO)
-  companyId   String       @db.Uuid
-  createdById String       @db.Uuid
+  companyId   String       
+  createdById String       
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   solution    String?
@@ -58,4 +64,10 @@ enum TicketStatus {
   ESPERANDO_APROVACAO
   ESPERANDO_MATERIAL
   CONCLUIDO
+}
+
+
+model Token{
+    email String @id
+    token String
 }
