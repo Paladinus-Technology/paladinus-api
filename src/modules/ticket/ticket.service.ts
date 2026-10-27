@@ -38,7 +38,7 @@ export class TicketService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const data = dataBank.map((ticket) => ({
+    const data = dataBank.map((ticket: any) => ({
       title: ticket.title,
       status: ticket.status,
       company: ticket.company.name,
@@ -66,7 +66,7 @@ export class TicketService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const data = dataBank.map((ticket) => ({
+    const data = dataBank.map((ticket: any) => ({
       title: ticket.title,
       status: ticket.status,
       company: ticket.company.name,

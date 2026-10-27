@@ -20,7 +20,7 @@ export class UserService {
       role: UserRole.CLIENT,
       companyId: inviteClient.companyId,
     };
-    const { token } = this.jwt.TokenFromEmail(userInvite);
+    const { token } = this.jwt.TokenInviteEmail(userInvite);
 
     this.email.inviteEmail(inviteClient.email, token, origin);
   }

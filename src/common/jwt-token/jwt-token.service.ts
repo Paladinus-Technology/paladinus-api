@@ -6,26 +6,49 @@ import { EmailPayload } from '../interfaces/EmailPayload';
 
 @Injectable()
 export class JwtTokenService {
+  private readonly authSecret: string;
+  private readonly loginEmailSecret: string;
+  private readonly inviteSecret: string;
+
+  private readonly authExpirationTime: string;
+  private readonly loginEmailExpirationTime: string;
+  private readonly inviteExpirationTime: string;
+
   constructor(
     private readonly jwt: JwtService,
-    private readonly configService: ConfigService,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    this.authSecret = this.configService.getOrThrow<string>('JWT_AUTH_SECRET');
 
-  sing(payload: JwtPayload) {
-    const access_token = this.jwt.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_EXPIRATION_TIME'),
-    });
-    const refresh_token = this.jwt.sign(
-      { id: payload.id, role: payload.role },
-      { expiresIn: this.configService.get<string>('JWT_EXPIRATION_WEEK') },
+    this.loginEmailSecret = this.configService.getOrThrow<string>(
+      'JWT_LOGIN_EMAIL_SECRET',
     );
-
-    return { access_token, refresh_token };
+    this.inviteSecret =
+      this.configService.getOrThrow<string>('JWT_INVITE_SECRET');
+    this.authExpirationTime = this.configService.getOrThrow<string>(
+      'JWT_AUTH_SECRET_EXPIRATION_TIME',
+    );
+    this.loginEmailExpirationTime = this.configService.getOrThrow<string>(
+      'JWT_EXPIRATION_LOGIN_EMAIL',
+    );
+    this.inviteExpirationTime = this.configService.getOrThrow<string>(
+      'JWT_EXPIRATION_INVITE',
+    );
   }
 
-  TokenFromEmail(payload: EmailPayload) {
+  singAuth(payload: JwtPayload) {
+    const access_token = this.jwt.sign(payload, {
+      secret: this.authSecret,
+      expiresIn: this.authExpirationTime,
+    });
+
+    return { access_token };
+  }
+
+  TokenInviteEmail(payload: EmailPayload) {
     const token = this.jwt.sign(payload, {
-      expiresIn: this.configService.get<string>('JWT_EXPIRATION_INVITE'),
+      secret: this.inviteSecret,
+      expiresIn: this.inviteExpirationTime,
     });
 
     return { token };

@@ -8,6 +8,7 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter';
 import { JwtTokenModule } from './common/jwt-token/jwt-token.module';
 import { CompanyModule } from './modules/company/company.module';
 import { TicketModule } from './modules/ticket/ticket.module';
+import { TokenModule } from './modules/token/token.module';
 import { UserModule } from './modules/user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -24,6 +25,7 @@ import { PrismaModule } from './prisma/prisma.module';
     AuthModule,
     PrismaModule,
     EmailModule,
+    TokenModule,
   ],
   controllers: [],
   providers: [

@@ -1,6 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, Logger } from '@nestjs/common';
 import { invitedEmail } from './templates/invited.template';
+import { SendCodeEmail } from './templates/send-code-login.template';
 import { welcomeTemplate } from './templates/welcome.template';
 
 @Injectable()
@@ -26,6 +27,18 @@ export class EmailService {
         to,
         subject: 'Acesso à plataforma corporativa da Paladinus SE',
         html: invitedEmail(token, origin),
+      });
+    } catch (error) {
+      Logger.log(error);
+    }
+  }
+
+  async sendCodeEmail(to: string, code: string) {
+    try {
+      return this.mailerService.sendMail({
+        to,
+        subject: 'Código de verificação',
+        html: SendCodeEmail(code),
       });
     } catch (error) {
       Logger.log(error);
