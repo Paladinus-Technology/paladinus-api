@@ -1,42 +1,21 @@
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
+import { corsConfig } from './config/cors.config';
+import { setupSwagger } from './config/swagger.config';
+import { validationConfig } from './config/validation.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.setGlobalPrefix('/api/v1');
+  corsConfig(app);
+  setupSwagger(app);
+  validationConfig(app);
+
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-    }),
-  );
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: true,
-  });
-
-  const config = new DocumentBuilder()
-    .setTitle('Paladinus API')
-    .setDescription('API documentation for the Paladinus platform.')
-    .setVersion('0.1')
-    .setContact(
-      'Paladinus Dev Team',
-      'https://paladinusse.com',
-      'paladinusse@gmail.com',
-    )
-    .build();
-
-  const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  app.setGlobalPrefix('/api/v1');
 
   const port: number | undefined = configService.get('PORT');
 

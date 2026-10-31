@@ -1,7 +1,6 @@
-import { join } from 'path';
-
 import type { ConfigService } from '@nestjs/config';
 import type { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
 
 export const databaseConfig = (
   configService: ConfigService,
@@ -54,10 +53,7 @@ export const databaseConfig = (
       url: configService.get('DATABASE_URL_MONGODB'),
       synchronize: true,
       logging: true,
-      entities: [
-        join(__dirname, '/**/*.entity{.ts,.js}'),
-        join(__dirname, '../../**/*.entity{.ts,.js}'),
-      ],
+      entities: [join(__dirname, '/../**/*.entity.{ts,js}')],
     };
   }
   throw new Error('DB_TYPE não suportado');
