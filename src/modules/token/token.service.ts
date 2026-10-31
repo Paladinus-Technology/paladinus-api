@@ -1,19 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { MongoRepository } from 'typeorm';
+import { Token } from './entities/token.entity'; // Ajuste o caminho conforme a sua estrutura de pastas
 
 @Injectable()
 export class TokenService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Token)
+    private readonly tokenRepository: MongoRepository<Token>,
+  ) {}
 
   async createToken(token: string, email: string) {
     try {
-      return await this.prisma.token.upsert({
+      let tokenEntity = await this.tokenRepository.findOne({
         where: { email },
-        update: { token },
-        create: { token, email },
       });
-    } catch (error) {
-      throw new Error(`Failed to create token: ${error}`);
+
+      if (tokenEntity) {
+        tokenEntity.token = token;
+      } else {
+        tokenEntity = this.tokenRepository.create({ email, token });
+      }
+
+      return await this.tokenRepository.save(tokenEntity);
+    } catch (err) {
+      throw new InternalServerErrorException(`Failed to create token: ${err}`);
     }
+  }
+
+  async findByEmail(email: string): Promise<Token | null> {
+    return await this.tokenRepository.findOne({ where: { email } });
+  }
+
+  async deleteCode(email: string) {
+    await this.tokenRepository.deleteOne({ email });
   }
 }

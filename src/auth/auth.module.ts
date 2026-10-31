@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
 import { EmailModule } from 'src/common/email/email.module';
 import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
-import { TokenService } from 'src/modules/token/token.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { CompanyModule } from 'src/modules/company/company.module';
+import { TokenModule } from 'src/modules/token/token.module';
+import { UserModule } from 'src/modules/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 
 @Module({
-  imports: [EmailModule],
+  imports: [UserModule, CompanyModule, TokenModule, EmailModule],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtTokenService, TokenService],
+  providers: [AuthService, JwtTokenService],
 })
 export class AuthModule {}
