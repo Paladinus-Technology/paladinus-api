@@ -53,8 +53,6 @@ export const databaseConfig = (
       url: configService.get('DATABASE_URL_MONGODB'),
       synchronize: true,
       logging: true,
-      tls: true,
-      tlsAllowInvalidCertificates: true,
       entities: [join(__dirname, '/../**/*.entity.{ts,js}')],
     };
   }
