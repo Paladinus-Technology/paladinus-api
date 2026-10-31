@@ -1,26 +1,31 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import {
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Resend } from 'resend';
 import { invitedEmail } from './templates/invited.template';
 import { SendCodeEmail } from './templates/send-code-login.template';
 import { welcomeTemplate } from './templates/welcome.template';
 
 @Injectable()
 export class EmailService {
-  private readonly logger = new Logger(EmailService.name);
+  constructor(private readonly configService: ConfigService) {
+    const apiKeyResend = this.configService.get<string>('RESEND_API_KEY');
+    this.resend = new Resend(apiKeyResend);
+  }
 
-  constructor(private readonly mailerService: MailerService) {}
+  private readonly logger = new Logger(EmailService.name);
+  private readonly resend: Resend;
 
   async sendWelcomeEmail(to: string, name: string): Promise<void> {
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.configService.get<string>('EMAIL_FROM')!,
         to,
         subject: '🎉 Bem-vindo à plataforma!',
         html: welcomeTemplate(name),
-        text: `Olá ${name}, Seja bem-vindo à nossa plataforma! Se tiver dúvidas, estamos à disposição. Abraços, Equipe de Suporte.`,
       });
       this.logger.log(`E-mail de boas-vindas enviado com sucesso para: ${to}`);
     } catch (err) {
@@ -38,7 +43,8 @@ export class EmailService {
 
   async inviteEmail(to: string, token: string, origin: string) {
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.configService.get<string>('EMAIL_FROM')!,
         to,
         subject: 'Acesso à plataforma corporativa da Paladinus SE',
         html: invitedEmail(token, origin),
@@ -59,7 +65,8 @@ export class EmailService {
 
   async sendCodeEmail(to: string, code: string) {
     try {
-      await this.mailerService.sendMail({
+      await this.resend.emails.send({
+        from: this.configService.get<string>('EMAIL_FROM')!,
         to,
         subject: 'Código de verificação',
         html: SendCodeEmail(code),

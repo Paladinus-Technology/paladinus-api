@@ -53,7 +53,6 @@ export class AuthService {
   }
 
   async requestCode(type: TypeCode, email: EmailDto) {
-    console.log('chegou no service');
     const user = await this.getUserByEmail(email.email);
 
     if (!user) {
@@ -69,12 +68,6 @@ export class AuthService {
   async verifyCode(email: string, code: string) {
     const codeInBank = await this.tokenService.findByEmail(email);
 
-    console.log(`
-     vem do banco de dados ${codeInBank?.token} 
-        ${typeof codeInBank?.token} 
-         =>  
-       vem do front ${code} 
-        ${typeof code},`);
     if (!codeInBank || codeInBank.token !== code) {
       throw new UnauthorizedException('Invalid verification code!');
     }

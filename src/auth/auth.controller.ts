@@ -18,7 +18,6 @@ export class AuthController {
 
   @Post('login/request-code')
   loginEmail(@Body() email: EmailDto) {
-    console.log('chegou no controler');
     return this.authService.requestCode(TypeCode.emailCode, email);
   }
 
