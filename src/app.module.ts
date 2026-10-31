@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
+import { databaseConfig } from './auth/config/database.config';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { EmailModule } from './common/email/email.module';
 import { AllExceptionsFilter } from './common/filters/http-exception.filter';
@@ -10,7 +12,6 @@ import { CompanyModule } from './modules/company/company.module';
 import { TicketModule } from './modules/ticket/ticket.module';
 import { TokenModule } from './modules/token/token.module';
 import { UserModule } from './modules/user/user.module';
-import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -18,12 +19,16 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: databaseConfig,
+    }),
     JwtTokenModule,
     CompanyModule,
     UserModule,
     TicketModule,
     AuthModule,
-    PrismaModule,
     EmailModule,
     TokenModule,
   ],
