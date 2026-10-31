@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { UserRole } from 'generated/prisma';
 import { JwtPayload } from 'src/auth/jwt/jwt.payload.interface';
 import { getUserToken } from 'src/common/decorators/getUserToken.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { UserRole } from 'src/common/enum/user-role.enum';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { TicketService } from './ticket.service';
 

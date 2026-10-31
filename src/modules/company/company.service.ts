@@ -1,21 +1,33 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ObjectId } from 'mongodb';
+import { MongoRepository } from 'typeorm';
+
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
+import { Company } from './entities/company.entity';
 
 @Injectable()
 export class CompanyService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    @InjectRepository(Company)
+    private readonly companyRepository: MongoRepository<Company>,
+  ) {}
 
   async create(createCompanyDto: CreateCompanyDto) {
     try {
-      await this.prisma.company.create({
-        data: {
-          name: createCompanyDto.name,
-          cnpj: createCompanyDto.cnpj,
-          location: createCompanyDto.location,
-        },
+      const company = this.companyRepository.create({
+        name: createCompanyDto.name,
+        cnpj: createCompanyDto.cnpj,
+        location: createCompanyDto.location,
+        emails: [], // Inicializa o array de emails embutidos vazio
       });
+
+      await this.companyRepository.save(company);
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -23,19 +35,35 @@ export class CompanyService {
   }
 
   async findAll() {
-    const data = await this.prisma.company.findMany();
+    const data = await this.companyRepository.find();
     return { data };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} company`;
+  async findOne(id: string) {
+    const company = await this.companyRepository.findOne({
+      where: { _id: new ObjectId(id) } as any,
+    });
+
+    if (!company) {
+      throw new NotFoundException(`Company with ID #${id} not found`);
+    }
+
+    return company;
   }
 
-  update(id: number, updateCompanyDto: UpdateCompanyDto) {
+  async update(id: string, updateCompanyDto: UpdateCompanyDto) {
+    const company = await this.findOne(id);
+
+    Object.assign(company, updateCompanyDto);
+    await this.companyRepository.save(company);
+
     return `This action updates a #${id} company`;
   }
 
-  remove(id: number) {
+  async remove(id: string) {
+    const company = await this.findOne(id);
+    await this.companyRepository.delete(company._id);
+
     return `This action removes a #${id} company`;
   }
 }
