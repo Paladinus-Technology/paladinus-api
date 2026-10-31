@@ -7,32 +7,34 @@ import { EmailPayload } from '../interfaces/EmailPayload';
 @Injectable()
 export class JwtTokenService {
   private readonly authSecret: string;
-  private readonly loginEmailSecret: string;
-  private readonly inviteSecret: string;
-
   private readonly authExpirationTime: string;
-  private readonly loginEmailExpirationTime: string;
+
+  private readonly inviteSecret: string;
   private readonly inviteExpirationTime: string;
+
+  private readonly loginEmailExpirationTime: string;
+  private readonly loginEmailSecret: string;
 
   constructor(
     private readonly jwt: JwtService,
     private configService: ConfigService,
   ) {
     this.authSecret = this.configService.getOrThrow<string>('JWT_AUTH_SECRET');
+    this.authExpirationTime = this.configService.getOrThrow<string>(
+      'JWT_AUTH_SECRET_EXPIRATION_TIME',
+    );
+
+    this.inviteSecret =
+      this.configService.getOrThrow<string>('JWT_INVITE_SECRET');
+    this.inviteExpirationTime = this.configService.getOrThrow<string>(
+      'JWT_EXPIRATION_INVITE',
+    );
 
     this.loginEmailSecret = this.configService.getOrThrow<string>(
       'JWT_LOGIN_EMAIL_SECRET',
     );
-    this.inviteSecret =
-      this.configService.getOrThrow<string>('JWT_INVITE_SECRET');
-    this.authExpirationTime = this.configService.getOrThrow<string>(
-      'JWT_AUTH_SECRET_EXPIRATION_TIME',
-    );
     this.loginEmailExpirationTime = this.configService.getOrThrow<string>(
       'JWT_EXPIRATION_LOGIN_EMAIL',
-    );
-    this.inviteExpirationTime = this.configService.getOrThrow<string>(
-      'JWT_EXPIRATION_INVITE',
     );
   }
 
