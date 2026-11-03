@@ -8,6 +8,7 @@ import { TokenService } from 'src/modules/token/token.service';
 import { UserService } from 'src/modules/user/user.service';
 import { EmailDto } from './dto/email.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { JwtPayload } from './jwt/jwt.payload.interface';
 
 @Injectable()
@@ -19,15 +20,13 @@ export class AuthService {
     private readonly tokenService: TokenService,
   ) {}
 
-  private getUserByEmail(email: string) {
-    return this.userService.getUserByEmail(email);
+  private async getUserByEmail(email: string) {
+    return await this.userService.getUserByEmail(email);
   }
 
-  // private getCompanyById(id: string) {
-  //   return this.companyRepository.findOne({
-  //     where: { _id: new ObjectId(id) },
-  //   });
-  // }
+  private async getCodeInBank(email: string) {
+    return await this.tokenService.findByEmail(email);
+  }
 
   async login(loginAuthDto: LoginAuthDto) {
     const user = await this.getUserByEmail(loginAuthDto.email);
@@ -66,7 +65,7 @@ export class AuthService {
   }
 
   async verifyCode(email: string, code: string) {
-    const codeInBank = await this.tokenService.findByEmail(email);
+    const codeInBank = await this.getCodeInBank(email);
 
     if (!codeInBank || codeInBank.token !== code) {
       throw new UnauthorizedException('Invalid verification code!');
@@ -85,7 +84,17 @@ export class AuthService {
 
     const { access_token } = this.jwt.singAuth(payload);
 
+    await this.tokenService.deleteCode(email);
+
     return { access_token };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const codeInBank = await this.getCodeInBank(dto.email);
+    if (!codeInBank || codeInBank.token !== dto.code) {
+      throw new UnauthorizedException('Invalid verification code!');
+    }
+    await this.userService.resetPassword(dto);
   }
 
   // async createMaster(masterCreatedDto: MasterCreateDto) {
@@ -159,5 +168,10 @@ export class AuthService {
   //       'Não foi possível criar o cliente.',
   //     );
   //   }
+  // }
+  // private getCompanyById(id: string) {
+  //   return this.companyRepository.findOne({
+  //     where: { _id: new ObjectId(id) },
+  //   });
   // }
 }

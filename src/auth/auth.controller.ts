@@ -4,6 +4,7 @@ import { TypeCode } from 'src/common/enum/type-code.enum';
 import { AuthService } from './auth.service';
 import { EmailDto } from './dto/email.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
 
 @Public()
@@ -29,6 +30,11 @@ export class AuthController {
   @Post('password-recovery')
   async recoveryPassword(@Body() email: EmailDto) {
     return this.authService.requestCode(TypeCode.resetPassword, email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
   }
 
   // @Public()
