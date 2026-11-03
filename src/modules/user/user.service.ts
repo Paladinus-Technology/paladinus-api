@@ -1,9 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { ResetPasswordDto } from 'src/auth/dto/resetPassword.dto';
 import { EmailService } from 'src/common/email/email.service';
 import { UserRole } from 'src/common/enum/user-role.enum';
 import { EmailPayload } from 'src/common/interfaces/EmailPayload';
 import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
+import { hashPassword } from 'src/common/utils/hash';
 import { Repository } from 'typeorm';
 import { InviteClientDto } from './dto/invite-client.dto';
 import { User } from './entities/user.entity';
@@ -63,5 +65,20 @@ export class UserService {
       }
       return user;
     }
+  }
+
+  async resetPassword({ email, password }: ResetPasswordDto) {
+    const user = await this.getUserByEmail(email);
+
+    if (!user) {
+      throw new BadRequestException(
+        'Erro ao tentar atualizar a senha do usuário',
+      );
+    }
+
+    const newPassword = await hashPassword(password);
+
+    await this.userRepository.update(user.id, { password: newPassword });
+    return { message: 'Senha atualizada com sucesso' };
   }
 }

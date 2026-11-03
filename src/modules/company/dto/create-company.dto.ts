@@ -1,12 +1,4 @@
-import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
-import { CreateUserDto } from 'src/modules/user/dto/create-user.dto';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateCompanyDto {
   @IsNotEmpty()
@@ -20,13 +12,7 @@ export class CreateCompanyDto {
   location!: string;
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => CreateUserDto)
-  users?: CreateUserDto;
-
-  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   emails?: string[];
-  // tickets?:
 }
