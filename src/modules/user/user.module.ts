@@ -4,12 +4,13 @@ import { EmailModule } from 'src/common/email/email.module';
 import { JwtTokenModule } from 'src/common/jwt-token/jwt-token.module';
 import { User } from './entities/user.entity';
 import { UserController } from './user.controller';
+import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), JwtTokenModule, EmailModule],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, UserRepository],
   exports: [TypeOrmModule, UserService],
 })
 export class UserModule {}

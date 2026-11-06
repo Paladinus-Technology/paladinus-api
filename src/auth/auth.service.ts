@@ -1,11 +1,18 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { EmailService } from 'src/common/email/email.service';
 import { TypeCode } from 'src/common/enum/type-code.enum';
+import { FinishSignupDto } from 'src/common/interfaces/finishSignup';
 import { JwtTokenService } from 'src/common/jwt-token/jwt-token.service';
 import { generateCode } from 'src/common/utils/generate-code.util';
 import { comparePassword } from 'src/common/utils/hash';
+import { CompanyService } from 'src/modules/company/company.service';
 import { TokenService } from 'src/modules/token/token.service';
 import { UserService } from 'src/modules/user/user.service';
+import { ClientCreateDto } from './dto/client-register.dto';
 import { EmailDto } from './dto/email.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
 import { ResetPasswordDto } from './dto/resetPassword.dto';
@@ -15,6 +22,7 @@ import { JwtPayload } from './jwt/jwt.payload.interface';
 export class AuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly companyService: CompanyService,
     private readonly jwt: JwtTokenService,
     private readonly email: EmailService,
     private readonly tokenService: TokenService,
@@ -40,7 +48,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect!');
 
     const payload: JwtPayload = {
-      id: user.id || user.id,
+      id: user.id.toString(),
       name: user.name,
       email: user.email,
       role: user.role,
@@ -76,7 +84,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid verification code!');
     }
     const payload: JwtPayload = {
-      id: user.id || user.id,
+      id: user.id.toHexString(),
       name: user.name,
       email: user.email,
       role: user.role,
@@ -97,6 +105,29 @@ export class AuthService {
     await this.userService.resetPassword(dto);
   }
 
+  async createClient(tokenDto: FinishSignupDto, clientDTO: ClientCreateDto) {
+    const company = await this.companyService.findOne(tokenDto.companyId);
+    if (!company) throw new BadRequestException('A Company is required!');
+
+    await this.userService.createClient(tokenDto, clientDTO);
+
+    const currentEmails = Array.isArray(company.emails) ? company.emails : [];
+    await this.companyService.update(tokenDto.companyId, {
+      emails: [...currentEmails, tokenDto.email],
+    });
+
+    return { message: 'Client created successfully' };
+  }
+
+  async verifyTokenFinishSignup(token: string) {
+    const payload = this.jwt.verifyTokenFinishSignup(token);
+    return payload;
+  }
+  // private getCompanyById(id: string) {
+  //   return this.companyRepository.findOne({
+  //     where: { _id: new ObjectId(id) },
+  //   });
+  // }
   // async createMaster(masterCreatedDto: MasterCreateDto) {
   //   const user = await this.getUserByEmail(masterCreatedDto.email);
   //   if (user) {
@@ -131,47 +162,5 @@ export class AuthService {
   //     Logger.error('[Erro ao criar master]', err);
   //     throw new BadRequestException('Erro ao criar usuário/master');
   //   }
-  // }
-
-  // async createClient(emailToken: EmailPayload, clientDTO: ClientCreateDto) {
-  //   const user = await this.getUserByEmail(emailToken.email);
-  //   if (user)
-  //     throw new BadRequestException('A User with this email already exists');
-
-  //   const company = await this.getCompanyById(emailToken.companyId);
-  //   if (!company) throw new BadRequestException('A Company is required!');
-
-  //   const hashedPassword = await hashPassword(clientDTO.password);
-
-  //   try {
-  //     const clientToCreate = this.userService.create({
-  //       name: clientDTO.name,
-  //       email: emailToken.email,
-  //       password: hashedPassword,
-  //       role: emailToken.role as UserRole,
-  //       companyId: emailToken.companyId,
-  //     });
-
-  //     const clientCreate = await this.userRepository.save(clientToCreate);
-
-  //     // Atualiza os emails da empresa no MongoDB
-  //     if (!company.emails) {
-  //       company.emails = [];
-  //     }
-  //     company.emails.push({ email: emailToken.email });
-  //     await this.companyRepository.save(company);
-
-  //     return `${clientCreate.name} Criado com sucesso !!`;
-  //   } catch (err) {
-  //     Logger.error('Erro ao criar cliente:', err);
-  //     throw new InternalServerErrorException(
-  //       'Não foi possível criar o cliente.',
-  //     );
-  //   }
-  // }
-  // private getCompanyById(id: string) {
-  //   return this.companyRepository.findOne({
-  //     where: { _id: new ObjectId(id) },
-  //   });
   // }
 }
