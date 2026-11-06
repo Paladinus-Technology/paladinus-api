@@ -73,7 +73,7 @@ export class UserService {
     const newPassword = await hashPassword(password);
 
     await this.userRepository.updatePassword(
-      user.id.toHexString(),
+      user._id.toHexString(),
       newPassword,
     );
     return { message: 'Senha atualizada com sucesso' };

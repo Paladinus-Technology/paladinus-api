@@ -48,7 +48,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or password incorrect!');
 
     const payload: JwtPayload = {
-      id: user.id.toString(),
+      id: user._id.toHexString(),
       name: user.name,
       email: user.email,
       role: user.role,
@@ -84,7 +84,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid verification code!');
     }
     const payload: JwtPayload = {
-      id: user.id.toHexString(),
+      id: user._id.toHexString(),
       name: user.name,
       email: user.email,
       role: user.role,
