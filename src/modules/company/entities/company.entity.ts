@@ -31,8 +31,8 @@ export class Company {
   @Column()
   location!: string;
 
-  @Column(() => CompanyEmailEmbedded)
-  emails!: CompanyEmailEmbedded[];
+  @Column('simple-array', { nullable: true })
+  emails!: string[];
 
   @CreateDateColumn()
   createdAt!: Date;
