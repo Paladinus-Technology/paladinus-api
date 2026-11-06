@@ -1,11 +1,17 @@
 import { ApiHideProperty } from '@nestjs/swagger';
-import { Column, Entity, ObjectIdColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ObjectId,
+  ObjectIdColumn,
+} from 'typeorm';
 
 @Entity('users')
 export class User {
   @ApiHideProperty()
   @ObjectIdColumn()
-  id!: string;
+  _id!: ObjectId;
 
   @Column()
   name!: string;
@@ -25,6 +31,6 @@ export class User {
   @Column({ nullable: true })
   refreshToken?: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 }

@@ -24,7 +24,7 @@ export class CompanyService {
         name: createCompanyDto.name,
         cnpj: createCompanyDto.cnpj,
         location: createCompanyDto.location,
-        emails: [], // Inicializa o array de emails embutidos vazio
+        emails: [],
       });
 
       await this.companyRepository.save(company);

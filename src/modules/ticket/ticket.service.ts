@@ -3,11 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ObjectId } from 'mongodb';
 import { MongoRepository } from 'typeorm';
 
-import { Company } from '../company/entities/company.entity'; // Ajuste o caminho conforme a sua estrutura de pastas
-import { User } from '../user/entities/user.entity'; // Ajuste o caminho conforme seu projeto
+import { Company } from '../company/entities/company.entity';
+import { User } from '../user/entities/user.entity';
 import { Ticket } from './entities/ticket.entity';
 
 import { JwtPayload } from 'src/auth/jwt/jwt.payload.interface';
+import { TicketStatus } from 'src/common/enum/ticket-status.enum';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 
@@ -38,10 +39,10 @@ export class TicketService {
       where: { _id: new ObjectId(dataUser.companyId) } as any,
     });
 
-    // Exemplo de criação de ticket utilizando o TypeORM
     const newTicket = this.ticketRepository.create({
       title: createTicketDto.title,
       description: createTicketDto.description,
+      status: TicketStatus.ABERTO,
       companyId: dataUser.companyId,
       createdById: user.id,
     });
@@ -52,12 +53,10 @@ export class TicketService {
   }
 
   async findAll() {
-    // Busca todos os tickets ordenados por data de criação decrescente
     const tickets = await this.ticketRepository.find({
       order: { createdAt: 'DESC' } as any,
     });
 
-    // Como o MongoDB armazena IDs e referências, buscamos os dados relacionados correspondentes
     const data = await Promise.all(
       tickets.map(async (ticket) => {
         const company = await this.companyRepository.findOne({

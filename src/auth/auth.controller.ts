@@ -1,9 +1,12 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Query } from '@nestjs/common';
 import { Public } from 'src/common/decorators/public.decorator';
 import { TypeCode } from 'src/common/enum/type-code.enum';
+import { FinishSignupDto } from 'src/common/interfaces/finishSignup';
 import { AuthService } from './auth.service';
+import { ClientCreateDto } from './dto/client-register.dto';
 import { EmailDto } from './dto/email.dto';
 import { LoginAuthDto } from './dto/login-auth.dto';
+import { ResetPasswordDto } from './dto/resetPassword.dto';
 import { VerifyCodeDto } from './dto/verify-code.dto';
 
 @Public()
@@ -31,17 +34,25 @@ export class AuthController {
     return this.authService.requestCode(TypeCode.resetPassword, email);
   }
 
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto);
+  }
+
   // @Public()
   // @Post('register/master')
   // masterRegister(@Body() masterCreatedDto: MasterCreateDto) {
   //   return this.authService.createMaster(masterCreatedDto);
   // }
 
-  // @Post('register/client')
-  // clientRegister(
-  //   @Body() clientCreateDto: ClientCreateDto,
-  //   @getUserToken() tokenEmail: EmailPayload,
-  // ) {
-  //   return this.authService.createClient(tokenEmail, clientCreateDto);
-  // }
+  @Post('finish-signup')
+  async finishSignup(
+    @Body() clientCreateDto: ClientCreateDto,
+    @Query('token') token: string,
+  ) {
+    const payload: FinishSignupDto =
+      await this.authService.verifyTokenFinishSignup(token);
+
+    return this.authService.createClient(payload, clientCreateDto);
+  }
 }

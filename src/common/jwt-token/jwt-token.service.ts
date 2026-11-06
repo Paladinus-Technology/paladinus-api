@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/auth/jwt/jwt.payload.interface';
 import { EmailPayload } from '../interfaces/EmailPayload';
+import { FinishSignupDto } from '../interfaces/finishSignup';
 
 @Injectable()
 export class JwtTokenService {
@@ -54,5 +55,13 @@ export class JwtTokenService {
     });
 
     return { token };
+  }
+
+  async verifyTokenFinishSignup(token: string): Promise<FinishSignupDto> {
+    const payload = await this.jwt.verifyAsync(token, {
+      secret: this.inviteSecret,
+    });
+
+    return payload as FinishSignupDto;
   }
 }
